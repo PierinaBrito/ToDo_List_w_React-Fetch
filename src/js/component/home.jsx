@@ -4,49 +4,88 @@ export const Home = () => {
   const [listArray, setListArray] = useState([]);
   const [isShown, setIsShown] = useState({ state: false, index: 0 });
 
-  const apiURL = "https://assets.4GeeksAcademy/apis/fake/todos/user/PierinaBrito";
+  const apiURL = "https://assets.breatheco.de/apis/fake/todos/user/pierinabrito";
 
-  useEffect(() => {
-    const initList = async () => {
-      const response = await fetch(apiURL);
-      try {
-        const data = await response.json();
-        setListArray(data);
-      } catch (error) {
-        throw new Error(error);
-      }
-    };
-    initList();
-  }, []);
-
-  useEffect(() => {
-    const updateList = async () => {
+  const createUser = async () => {
+    
+    try {
       const response = await fetch(apiURL, {
-        method: "PUT", // or 'POST'
-        body: JSON.stringify(listArray), // data can be `string` or {object}!
+        method: "POST", 
+        body: JSON.stringify([]), // data can be `string` or {object}!
         headers: {
           "Content-Type": "application/json",
         },
       });
-      try {
-        const data = await response.json();
-        console.log("Success:", JSON.stringify(data));
-      } catch (error) {
-        throw new Error(error);
+      
+      if (response.ok) {
+      initList()}
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
+  const initList = async () => {
+    try {
+      const response = await fetch(apiURL);
+      const data = await response.json();
+      if (response.status == 404) {
+        createUser()
       }
-    };
-    updateList();
-  }, []);
+      else {setListArray(data)}
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
+  const updateList = async (listArray) => {
+    const response = await fetch(apiURL, {
+      method: "PUT", // or 'POST'
+      body: JSON.stringify(listArray), // data can be `string` or {object}!
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    try {
+      const data = await response.json();
+      initList()
+      console.log("Success:", JSON.stringify(data));
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
 
   const addItem = (event) => {
     if (event.keyCode === 13) {
       let userInput = { label: event.target.value, done: false };
       const newTodo = [...listArray, userInput];
-      setListArray(newTodo);
+      updateList(newTodo);
       console.log(newTodo);
       event.target.value = "";
     }
   };
+
+  const deleteAllTask = async () => {
+    
+    try {
+      const response = await fetch(apiURL, {
+        method: "DELETE", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (response.ok) {
+      initList()}
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
+
+  useEffect(() => {
+    initList();
+  }, []);
+
 
   const doneItem = (index) => {
     let newArray = listArray.map((item, i) => {
@@ -60,23 +99,29 @@ export const Home = () => {
 
   const removeItem = (index) => {
     const newArray = listArray.filter((item, i) => i !== index);
-    setListArray(newArray);
+    if (newArray.length == 0) { deleteAllTask ()
+    }
+    else {updateList(newArray);}
+    
   };
 
   let createdList = listArray.map((item, i) => {
+    
     return (
+
       <li
         className="list-group-item"
         key={i}
         onMouseEnter={() => setIsShown({ state: true, index: i })}
         onMouseLeave={() => setIsShown({ state: false, index: 0 })}
       >
-        <span className={`py-4 mt-2 ${item.done && "doneTask"}`}>
+        <div className="d-flex justify-content-between align-items-center">
+        <span className={` ${item.done && "doneTask"}`}>
           {item.label}
         </span>
 
         {isShown.state === true && isShown.index === i ? (
-          <>
+          <div>
             <button
               className="btn btn-danger float-right ml-1"
               onClick={() => removeItem(i)}
@@ -84,15 +129,16 @@ export const Home = () => {
               <i className="fas fa-trash-alt"></i>
             </button>
             <button
-              className="btn btn-success float-right"
+              className="btn btn-success float-right" 
               onClick={() => doneItem(i)}
             >
               <i className="fas fa-check"></i>
             </button>{" "}
-          </>
+          </div>
         ) : (
           ""
         )}
+        </div>
       </li>
     );
   });
@@ -113,10 +159,13 @@ export const Home = () => {
           <li className="list-group-item">No tasks, add a task</li>
         )}
         <li className="list-group-item p-1">
-          {listArray.length}
+          {listArray.length -1}
           {listArray.length === 1 ? " item" : " items"} left
         </li>
       </ul>
+      <button onClick={deleteAllTask}>
+        Delete All Task
+      </button>
     </div>
   );
 };
