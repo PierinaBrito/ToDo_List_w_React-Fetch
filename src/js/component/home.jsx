@@ -11,7 +11,7 @@ export const Home = () => {
     try {
       const response = await fetch(apiURL, {
         method: "POST", 
-        body: JSON.stringify([]), // data can be `string` or {object}!
+        body: JSON.stringify([]),
         headers: {
           "Content-Type": "application/json",
         },
@@ -147,7 +147,7 @@ export const Home = () => {
     <div className="col-8 mx-auto p-2">
       <h1 className="text-center">To Do List</h1>
       <input
-        className="w-100 mb-2 rounded"
+        className="w-100 mb-2 rounded p-2"
         placeholder="Add a task here"
         type="text"
         onKeyDown={addItem}
@@ -163,7 +163,8 @@ export const Home = () => {
           {listArray.length === 1 ? " item" : " items"} left
         </li>
       </ul>
-      <button onClick={deleteAllTask}>
+      <button className="deleteAllTask btn btn-success float-right"
+        onClick={deleteAllTask}>
         Delete All Task
       </button>
     </div>
